@@ -68,6 +68,12 @@ public class QuerySlotHelper {
         return decodeString(value);
     }
     
+    
+    public void extractExtraMetadata()
+    {
+    
+    }
+    
     /**
      * Stores a string-valued parameter into a slot.
      * @param param

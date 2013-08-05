@@ -15,21 +15,30 @@
  */
 package org.openehealth.ipf.platform.camel.ihe.xds.iti42
 
-import javax.xml.bind.JAXBContext
+import org.apache.cxf.binding.soap.SoapHeader
+import org.apache.cxf.helpers.XMLUtils
 import org.apache.cxf.transport.servlet.CXFServlet
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.openehealth.ipf.commons.ihe.xds.core.SampleData
+import org.openehealth.ipf.commons.ihe.xds.core.metadata.DocumentEntry
 import org.openehealth.ipf.commons.ihe.xds.core.metadata.LocalizedString
+import org.openehealth.ipf.commons.ihe.xds.core.requests.RegisterDocumentSet
 import org.openehealth.ipf.commons.ihe.xds.core.responses.Response
 import org.openehealth.ipf.commons.ihe.xds.core.stub.ebrs30.lcm.SubmitObjectsRequest
+import org.openehealth.ipf.commons.xml.XmlUtils
+import org.openehealth.ipf.platform.camel.ihe.ws.AbstractWsEndpoint
 import org.openehealth.ipf.platform.camel.ihe.ws.StandardTestContainer
+import org.openehealth.ipf.platform.camel.ihe.xds.XdsEndpoint
+import org.w3c.dom.Element
+
+import javax.xml.bind.JAXBContext
+import javax.xml.bind.Unmarshaller
+import javax.xml.namespace.QName
+
 import static org.openehealth.ipf.commons.ihe.xds.core.responses.Status.FAILURE
 import static org.openehealth.ipf.commons.ihe.xds.core.responses.Status.SUCCESS
-import javax.xml.bind.Unmarshaller
-import org.openehealth.ipf.commons.xml.XmlUtils
-import org.openehealth.ipf.platform.camel.ihe.xds.XdsEndpoint
 
 /**
  * Tests the ITI-42 transaction with a webservice and client adapter defined via URIs.
@@ -44,16 +53,23 @@ class TestIti42 extends StandardTestContainer {
     def SERVICE3 = "xds-iti42://localhost:${port}/xds-iti42-service3"
 
     def SERVICE2_ADDR = "http://localhost:${port}/xds-iti42-service2"
-    
-    def request
-    def docEntry
-    
-    static void main(args) {
+
+    RegisterDocumentSet request
+    DocumentEntry docEntry
+
+    def static Map<String, ?> camelHeaders
+
+    /*static void main(args) {
         startServer(new CXFServlet(), CONTEXT_DESCRIPTOR, false, DEMO_APP_PORT);
-    }
+    }*/
     
     @BeforeClass
     static void classSetUp() {
+        Element assertion = XMLUtils.parse(TestIti42.class.classLoader.getResourceAsStream('saml2-assertion-for-xua.xml')).documentElement
+        SoapHeader header = new SoapHeader(new QName(assertion.namespaceURI, assertion.localName), assertion)
+        //header.mustUnderstand = true
+        camelHeaders = [(AbstractWsEndpoint.OUTGOING_SOAP_HEADERS) : [header]]
+
         startServer(new CXFServlet(), CONTEXT_DESCRIPTOR)
     }
     
@@ -64,7 +80,42 @@ class TestIti42 extends StandardTestContainer {
     }
     
     @Test
+    void checkIti42ExtraMetadata() {
+        // request with extra metadata
+        String submissionSetString = readFile('submission-set.xml')
+        JAXBContext jaxbContext = JAXBContext.newInstance(SubmitObjectsRequest.class)
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller()
+        def requestWitmMetadata = unmarshaller.unmarshal(XmlUtils.source(submissionSetString))
+        def response = send(SERVICE3, requestWitmMetadata, Response.class)
+        assert response.status == SUCCESS
+
+        // request without extra metadata
+        response = send(SERVICE3, request, Response.class)
+        assert response.status == FAILURE
+    }
+    
+    @Test
     void testIti42() {
+        request.documentEntries[0].extraMetadata = [
+                'urn:oehf:docEntry1' : ['a', 'b', 'c'],
+                'invalid' : ['d', 'e', 'f'],
+                'urn:oehf:docEntry2' : ['g', 'h']]
+
+        request.submissionSet.extraMetadata = [
+                'urn:oehf:submission1' : ['1', '2', '3'],
+                'wrong' : ['4', '5', '6'],
+                'urn:oehf:submission2' : ['7', '8']]
+
+        request.associations[1].extraMetadata = [
+                'urn:oehf:association1' : ['A', 'B', 'C'],
+                'improper' : ['D', 'E', 'F'],
+                'urn:oehf:association2' : ['G', 'H']]
+
+        request.folders[0].extraMetadata = [
+                'urn:oehf:folder1' : ['i', 'ii', 'iii'],
+                'bad' : ['iv', 'v', 'vi'],
+                'urn:oehf:folder2' : ['vii', 'viii']]
+
         assert SUCCESS == sendIt(SERVICE1, 'service 1').status
         assert SUCCESS == sendIt(SERVICE2, 'service 2').status
         assert auditSender.messages.size() == 4
@@ -90,20 +141,7 @@ class TestIti42 extends StandardTestContainer {
         assert Boolean.valueOf(endpoint.properties['mtom-enabled']) == true
     }
 
-    @Test
-    void checkIti42ExtraMetadata() {
-        // request with extra metadata
-        String submissionSetString = readFile('submission-set.xml')
-        JAXBContext jaxbContext = JAXBContext.newInstance(SubmitObjectsRequest.class)
-        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller()
-        def requestWitmMetadata = unmarshaller.unmarshal(XmlUtils.source(submissionSetString))
-        def response = send(SERVICE3, requestWitmMetadata, Response.class)
-        assert response.status == SUCCESS
-
-        // request without extra metadata
-        response = send(SERVICE3, request, Response.class)
-        assert response.status == FAILURE
-    }
+    
 
 
     void checkAudit(outcome) {

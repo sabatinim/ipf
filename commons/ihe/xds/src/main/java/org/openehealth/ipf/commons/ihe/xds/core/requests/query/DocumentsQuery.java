@@ -15,6 +15,7 @@
  */
 package org.openehealth.ipf.commons.ihe.xds.core.requests.query;
 
+import java.util.ArrayList;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +24,7 @@ import org.openehealth.ipf.commons.ihe.xds.core.metadata.TimeRange;
 
 import javax.xml.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Abstract stored query for documents.
@@ -59,6 +61,9 @@ abstract public class DocumentsQuery extends StoredQuery  {
     @Getter private final TimeRange serviceStartTime = new TimeRange();
     @Getter private final TimeRange serviceStopTime = new TimeRange();
 
+    
+
+    
     /**
      * For JAXB only.
      */

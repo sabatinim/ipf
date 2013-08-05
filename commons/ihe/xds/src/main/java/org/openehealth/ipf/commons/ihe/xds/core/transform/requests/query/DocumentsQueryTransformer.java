@@ -15,6 +15,7 @@
  */
 package org.openehealth.ipf.commons.ihe.xds.core.transform.requests.query;
 
+import org.openehealth.ipf.commons.ihe.xds.core.ExtraMetadataHolder;
 import org.openehealth.ipf.commons.ihe.xds.core.ebxml.EbXMLAdhocQueryRequest;
 import org.openehealth.ipf.commons.ihe.xds.core.requests.query.DocumentsQuery;
 
@@ -63,6 +64,14 @@ abstract class DocumentsQueryTransformer<T extends DocumentsQuery> {
         slots.fromCode(DOC_ENTRY_PRACTICE_SETTING_CODE, query.getPracticeSettingCodes());
         slots.fromCode(DOC_ENTRY_EVENT_CODE, query.getEventCodes());
         slots.fromCode(DOC_ENTRY_CONFIDENTIALITY_CODE, query.getConfidentialityCodes());
+        
+        
+        
+        if (ebXML instanceof ExtraMetadataHolder) {
+            ((ExtraMetadataHolder) ebXML).setExtraMetadata(query.getExtraMetadata());
+        }
+        
+        
     }
     
     /**
@@ -102,5 +111,9 @@ abstract class DocumentsQueryTransformer<T extends DocumentsQuery> {
         query.getServiceStopTime().setTo(slots.toNumber(DOC_ENTRY_SERVICE_STOP_TIME_TO));
         
         query.setHomeCommunityId(ebXML.getHome());
+        
+        if (ebXML instanceof ExtraMetadataHolder) {
+            query.setExtraMetadata(((ExtraMetadataHolder) ebXML).getExtraMetadata());
+        }
     }
 }

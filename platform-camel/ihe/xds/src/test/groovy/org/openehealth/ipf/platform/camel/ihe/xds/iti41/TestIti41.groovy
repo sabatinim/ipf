@@ -116,6 +116,8 @@ class TestIti41 extends StandardTestContainer {
     void checkAudit(outcome) {
         def message = getAudit('C', SERVICE2_ADDR)[0]
         assert message.AuditSourceIdentification.size() == 1
+        
+       
         assert message.ActiveParticipant.size() == 2
         assert message.ParticipantObjectIdentification.size() == 2
         assert message.children().size() == 6

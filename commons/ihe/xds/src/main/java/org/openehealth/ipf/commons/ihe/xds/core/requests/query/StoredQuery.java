@@ -15,6 +15,8 @@
  */
 package org.openehealth.ipf.commons.ihe.xds.core.requests.query;
 
+import java.util.ArrayList;
+import java.util.Map;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,13 +32,14 @@ import javax.xml.bind.annotation.XmlType;
  * @author Jens Riemschneider
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "StoredQuery", propOrder = { "homeCommunityId" })
+@XmlType(name = "StoredQuery", propOrder = { "homeCommunityId","extraMetadata" })
 @EqualsAndHashCode(callSuper = true, doNotUseGetters = true)
 public abstract class StoredQuery extends Query {
     private static final long serialVersionUID = -8296981156625412818L;
 
     @Getter @Setter private String homeCommunityId;
 
+    @Getter @Setter private Map<String, ArrayList<String>> extraMetadata;
     /**
      * For JAXB serialization only.
      */

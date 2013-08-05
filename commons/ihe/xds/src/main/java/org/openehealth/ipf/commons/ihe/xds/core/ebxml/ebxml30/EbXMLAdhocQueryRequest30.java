@@ -15,6 +15,7 @@
  */
 package org.openehealth.ipf.commons.ihe.xds.core.ebxml.ebxml30;
 
+import java.util.ArrayList;
 import static org.apache.commons.lang3.Validate.notNull;
 import org.openehealth.ipf.commons.ihe.xds.core.ebxml.EbXMLAdhocQueryRequest;
 import org.openehealth.ipf.commons.ihe.xds.core.ebxml.EbXMLSlot;
@@ -22,12 +23,14 @@ import org.openehealth.ipf.commons.ihe.xds.core.stub.ebrs30.query.AdhocQueryRequ
 import org.openehealth.ipf.commons.ihe.xds.core.stub.ebrs30.query.ResponseOptionType;
 
 import java.util.List;
+import java.util.Map;
+import org.openehealth.ipf.commons.ihe.xds.core.ExtraMetadataHolder;
 
 /**
  * Encapsulation of {@link AdhocQueryRequest}.
  * @author Jens Riemschneider
  */
-public class EbXMLAdhocQueryRequest30 implements EbXMLAdhocQueryRequest {
+public class EbXMLAdhocQueryRequest30 implements EbXMLAdhocQueryRequest, ExtraMetadataHolder {
     private final AdhocQueryRequest request;
     
     /**
@@ -113,5 +116,15 @@ public class EbXMLAdhocQueryRequest30 implements EbXMLAdhocQueryRequest {
 
     private EbXMLSlotList30 getSlotList() {
         return new EbXMLSlotList30(request.getAdhocQuery().getSlot());
+    }
+
+    @Override
+    public Map<String, ArrayList<String>> getExtraMetadata() {
+        return request.getAdhocQuery().getExtraMetadata();
+    }
+
+    @Override
+    public void setExtraMetadata(Map<String, ArrayList<String>> map) {
+        request.getAdhocQuery().setExtraMetadata(map);
     }
 }

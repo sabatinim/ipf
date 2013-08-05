@@ -8,10 +8,16 @@
 
 package org.openehealth.ipf.commons.ihe.xds.core.stub.ebrs30.rim;
 
+import java.util.ArrayList;
+import java.util.Map;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import lombok.Getter;
+import lombok.Setter;
+import org.openehealth.ipf.commons.ihe.xds.core.ExtraMetadataHolder;
 
 
 /**
@@ -43,7 +49,7 @@ import javax.xml.bind.annotation.XmlType;
     "queryExpression"
 })
 public class AdhocQueryType
-    extends RegistryObjectType
+    extends RegistryObjectType implements ExtraMetadataHolder
 {
 
     @XmlElement(name = "QueryExpression")
@@ -72,5 +78,9 @@ public class AdhocQueryType
     public void setQueryExpression(QueryExpressionType value) {
         this.queryExpression = value;
     }
+    
+    @XmlTransient
+    @Getter @Setter private Map<String, ArrayList<String>> extraMetadata;
+
 
 }
